@@ -18,10 +18,10 @@ const saltRounds = 10;
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { username, password } = req.body;
+  const { workerNumber, password, userName } = req.body;
 
   // Check if email or password or name are provided as empty strings
-  if (username === "" || password === "") {
+  if (workerNumber === "" || password === "") {
     res.status(400).json({ message: "Credenciais Inválidas" });
     return;
   }
@@ -29,17 +29,17 @@ router.post("/signup", (req, res, next) => {
 
 
   // This regular expression checks password for special characters and minimum length
-  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
-  if (!passwordRegex.test(password)) {
-    res.status(400).json({
-      message:
-        "Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.",
-    });
-    return;
-  }
+  // const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  // if (!passwordRegex.test(password)) {
+  //   res.status(400).json({
+  //     message:
+  //       "Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.",
+  //   });
+  //   return;
+  // }
 
   // Check the users collection if a user with the same email already exists
-  User.findOne({ email })
+  User.findOne({ workerNumber })
     .then((foundUser) => {
       // If the user with the same email already exists, send an error response
       if (foundUser) {
@@ -53,15 +53,15 @@ router.post("/signup", (req, res, next) => {
 
       // Create the new user in the database
       // We return a pending promise, which allows us to chain another `then`
-      return User.create({ email, password: hashedPassword, name });
+      return User.create({ workerNumber, password: hashedPassword, userName });
     })
     .then((createdUser) => {
       // Deconstruct the newly created user object to omit the password
       // We should never expose passwords publicly
-      const { email, name, _id } = createdUser;
+      const { workerNumber, userName, _id } = createdUser;
 
       // Create a new object that doesn't expose the password
-      const user = { email, name, _id };
+      const user = { workerNumber, userName, _id };
 
       // Send a json response containing the user object
       res.status(201).json({ user: user });
@@ -71,16 +71,16 @@ router.post("/signup", (req, res, next) => {
 
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
-  const { email, password } = req.body;
+  const { workerNumber, password } = req.body;
 
   // Check if email or password are provided as empty string
-  if (email === "" || password === "") {
-    res.status(400).json({ message: "Provide email and password." });
+  if (workerNumber === "" || password === "") {
+    res.status(400).json({ message: "Provide worker number and password." });
     return;
   }
 
   // Check the users collection if a user with the same email exists
-  User.findOne({ email })
+  User.findOne({ workerNumber })
     .then((foundUser) => {
       if (!foundUser) {
         // If the user is not found, send an error response
@@ -93,10 +93,10 @@ router.post("/login", (req, res, next) => {
 
       if (passwordCorrect) {
         // Deconstruct the user object to omit the password
-        const { _id, email, name } = foundUser;
+        const { _id, workerNumber, userName } = foundUser;
 
         // Create an object that will be set as the token payload
-        const payload = { _id, email, name };
+        const payload = { _id, workerNumber, userName };
 
         // Create a JSON Web Token and sign it
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
