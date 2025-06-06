@@ -18,7 +18,7 @@ const saltRounds = 10;
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { workerNumber, password, userName } = req.body;
+  const { workerNumber, password, userName, isAdmin } = req.body;
 
   // Check if email or password or name are provided as empty strings
   if (workerNumber === "" || password === "") {
@@ -53,7 +53,7 @@ router.post("/signup", (req, res, next) => {
 
       // Create the new user in the database
       // We return a pending promise, which allows us to chain another `then`
-      return User.create({ workerNumber, password: hashedPassword, userName });
+      return User.create({ workerNumber, password: hashedPassword, userName, isAdmin });
     })
     .then((createdUser) => {
       // Deconstruct the newly created user object to omit the password
@@ -93,15 +93,15 @@ router.post("/login", (req, res, next) => {
 
       if (passwordCorrect) {
         // Deconstruct the user object to omit the password
-        const { _id, workerNumber, userName } = foundUser;
+        const { _id, workerNumber, userName, isAdmin } = foundUser;
 
         // Create an object that will be set as the token payload
-        const payload = { _id, workerNumber, userName };
+        const payload = { _id, workerNumber, userName, isAdmin };
 
         // Create a JSON Web Token and sign it
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
           algorithm: "HS256",
-          expiresIn: "6h",
+          expiresIn: "3h",
         });
 
         // Send the token as the response
