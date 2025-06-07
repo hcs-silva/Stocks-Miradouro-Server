@@ -18,11 +18,11 @@ const saltRounds = 10;
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { workerNumber, password, userName, isAdmin } = req.body;
+  const { workerNumber, password, userName, isAdmin } = req.body.userData;
 
   // Check if email or password or name are provided as empty strings
   if (workerNumber === "" || password === "") {
-    res.status(400).json({ message: "Credenciais Inválidas" });
+    res.status(400).json({ message: "Os campos Número de Funcionário e Password são Obrigatórios" });
     return;
   }
 
