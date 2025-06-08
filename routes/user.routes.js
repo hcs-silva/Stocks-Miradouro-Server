@@ -72,4 +72,24 @@ router.patch("/edit-user/:userId", isAuthenticated, async (req, res, next) => {
     }
 });
 
+router.delete("/delete-user/:userId", isAuthenticated, async (req, res, next) => {
+    if(!req.payload?.isAdmin){
+        return res.status(403).json({ message: "O utilizador atual não tem permissões para efetuar esta operação." });
+    }
+    const { userId } = req.params;
+
+    try {
+        const deletedUser = await User.findByIdAndDelete(userId);
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        res.status(200).json({ message: "User deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting user data:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+});
+
 module.exports = router;
